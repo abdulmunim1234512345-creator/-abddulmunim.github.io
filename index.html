@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Web Developer Abdul Munim">
+    <meta name="description" content="This website was designed and built by Web Developer Abdul Munim.">
+
+    <title>ChatOPT</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Söhne&display=swap" rel="stylesheet">
+    
+    <!-- Highlight.js & Marked -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Söhne', 'Inter', -apple-system, sans-serif;
+            background-color: #212121;
+            color: #ececec;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #424242; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Markdown Styles */
+        .prose p { margin-bottom: 1rem; line-height: 1.75; }
+        
+        /* Code Block Styling - Beautiful & Colorful */
+        .prose pre { 
+            background: #23272e !important; /* Richer dark blue-gray */
+            border-radius: 0.75rem; 
+            padding: 1rem;
+            padding-top: 3rem; /* Space for window controls */
+            overflow-x: auto; 
+            border: 1px solid rgba(255,255,255,0.08);
+            margin: 1.5rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        /* Mac-style Window Controls */
+        .prose pre::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2.5rem;
+            background: #1b1f24;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.75rem 0.75rem 0 0;
+            z-index: 10;
+        }
+
+        .prose pre::after {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background: #ff5f56; /* Red */
+            box-shadow: 1.25rem 0 0 #ffbd2e, 2.5rem 0 0 #27c93f; /* Yellow & Green */
+            z-index: 11;
+        }
+        
+        .prose code { 
+            font-family: 'Fira Code', 'Consolas', monospace; 
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        /* Inline Code */
+        .prose :not(pre) > code {
+            background: rgba(255,255,255,0.1);
+            padding: 0.2em 0.4em;
+            border-radius: 0.3em;
+            color: #e06c75; /* Vibrant Red/Pink */
+            font-size: 0.875em;
+        }
+        
+        .prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose ul { list-style-type: disc; }
+        .prose ol { list-style-type: decimal; }
+        .prose strong { color: #fff; font-weight: 600; }
+        
+        /* Vibrant Syntax Highlighting Overrides */
+        .hljs { background: transparent !important; }
+        .hljs-keyword { color: #c678dd !important; font-weight: bold; } /* Purple */
+        .hljs-function { color: #61afef !important; } /* Blue */
+        .hljs-string { color: #98c379 !important; } /* Green */
+        .hljs-comment { color: #7f848e !important; font-style: italic; } /* Grey */
+        .hljs-title { color: #e5c07b !important; } /* Yellow */
+        .hljs-number { color: #d19a66 !important; } /* Orange */
+        .hljs-built_in { color: #56b6c2 !important; } /* Cyan */
+        .hljs-variable { color: #e06c75 !important; } /* Red */
+        .hljs-attr { color: #d19a66 !important; }
+        
+        /* Thinking Animation */
+        .thinking-container {
+            display: flex;
+            align-items: center;
+            height: 24px;
+        }
+        .thinking-ball {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border-radius: 50%;
+            animation: breathe 1s ease-in-out infinite alternate;
+        }
+        @keyframes breathe {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            100% { transform: scale(1.3); opacity: 1; }
+        }
+        
+        /* Ball Writing Cursor */
+        .writing-ball {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border-radius: 50%;
+            margin-left: 4px;
+            vertical-align: baseline;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            animation: pulse-write 0.5s infinite alternate;
+        }
+        @keyframes pulse-write {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.7; }
+        }
+
+        /* Sidebar Transitions */
+        #sidebar { transition: width 0.3s ease-in-out, transform 0.3s ease-in-out; }
+        .sidebar-content { transition: opacity 0.2s ease; }
+        .hidden-content { display: none; opacity: 0; }
+        .visible-content { display: flex; opacity: 1; }
+
+        /* Error Animation */
+        .circle-loader {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-left-color: #ef4444;
+            animation: loader-spin 1.2s infinite linear;
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+            border-radius: 50%;
+            width: 7em;
+            height: 7em;
+        }
+        .load-complete {
+            -webkit-animation: none;
+            animation: none;
+            border-color: #ef4444;
+            transition: border 500ms ease-out;
+        }
+        .checkmark { display: none; }
+        .cross { display: block; }
+        .cross.draw:after {
+            animation-duration: 800ms;
+            animation-timing-function: ease;
+            animation-name: cross;
+            transform: scaleX(-1);
+        }
+        .cross:after {
+            opacity: 1;
+            height: 3.5em;
+            width: 3.5em;
+            transform-origin: left top;
+            border-right: 3px solid #ef4444;
+            border-top: 3px solid #ef4444;
+            content: '';
+            left: 1.7em;
+            top: 3.5em;
+            position: absolute;
+            transform: scaleX(-1) rotate(135deg); 
+        }
+
+        @keyframes loader-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Billing Input Styles */
+        .billing-input {
+            background-color: #2f2f2f;
+            border: 1px solid #424242;
+            color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .billing-input:focus {
+            border-color: #10a37f;
+            outline: none;
+            box-shadow: 0 0 0 1px #10a37f;
+            z-index: 20;
+        }
+        .billing-label {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        
+        /* Validation Styles */
+        .input-error {
+            border-color: #ef4444 !important;
+            z-index: 10;
+            position: relative;
+        }
+        .input-error:focus {
+            box-shadow: 0 0 0 1px #ef4444 !important;
+        }
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            min-height: 1rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            line-height: 1.2;
+        }
+        .error-msg.visible { opacity: 1; }
+
+        /* Menu Styles */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            width: 100%;
+            text-align: left;
+            color: #ececec;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            border-radius: 8px;
+        }
+        .menu-item:hover { background-color: #424242; }
+        .menu-icon { width: 18px; height: 18px; stroke-width: 2px; }
+
+        /* Image Library Overlay */
+        .lib-overlay { background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
+
+        /* Settings Modal */
+        .settings-tab.active { background-color: #424242; color: white; }
+        .settings-tab { color: #9ca3af; }
+        .settings-tab:hover:not(.active) { background-color: #2f2f2f; color: #d1d5db; }
+
+        /* Login Page Background */
+        .auth-bg {
+            background: #212121;
+            position: relative;
+        }
+        .auth-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+            animation: rotateBg 60s linear infinite;
+        }
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-closed { transform: translateX(-100%); }
+            .sidebar-open { transform: translateX(0); }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0"
+  }
+}
+</script>
+</head>
+<body class="h-screen flex overflow-hidden text-sm md:text-base">
+
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleMobileSidebar()"></div>
+
+    <!-- API Key Overlay -->
+    <div id="apiKeyOverlay" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#2f2f2f] p-8 rounded-2xl max-w-md w-full text-center border border-white/10 shadow-2xl relative">
+            <div class="w-16 h-16 bg-[#10a37f]/20 text-[#10a37f] rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Connect AI Service</h2>
+            <p class="text-gray-400 mb-6">To use ChatOPT, you need to connect a Google Gemini API key for images. Text chats will use your connected OpenAI key.</p>
+            
+            <button id="connectApiBtn" onclick="requestApiKey()" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors mb-4 hidden flex items-center justify-center gap-2">
+                <span>Select Google API Key</span>
+            </button>
+            
+            <div id="noEnvMsg" class="hidden">
+                 <div class="text-xs text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20 mb-4">
+                     Environment not supported. Please run this app in Google AI Studio or provide an API_KEY environment variable.
+                 </div>
+                 <button onclick="document.getElementById('apiKeyOverlay').classList.add('hidden')" class="text-gray-500 text-xs hover:text-white underline">Continue with OpenAI only</button>
+            </div>
+            
+            <div id="apiStatusMsg" class="text-xs text-gray-500 mt-2">
+                 Securely connecting to provider...
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal Overlay -->
+    <div id="deleteOverlay" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-[#2f2f2f] p-6 rounded-2xl max-w-sm w-full border border-white/10 shadow-2xl relative">
+            <h2 class="text-xl font-bold text-white mb-2">Delete chat?</h2>
+            <p class="text-gray-400 text-sm mb-6">This will delete <span id="deleteChatTitle" class="font-bold text-white"></span>.</p>
+            <div class="text-xs text-gray-500 mb-6">Visit settings to delete any memories saved during this chat.</div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-[#424242] transition-colors font-medium">Cancel</button>
+                <button id="confirmDeleteBtn" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors font-medium">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade Modal Overlay -->
+    <div id="upgradeOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4 transition-opacity duration-200 opacity-0" onclick="if(event.target === this) closeUpgradeModal()">
+        <div class="bg-[#2f2f2f] w-full max-w-4xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden transform transition-all duration-200 scale-95 relative flex flex-col md:flex-row max-h-[90vh] overflow-y-auto md:overflow-visible" id="upgradeModalContent">
+            
+            <button onclick="closeUpgradeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            <!-- Column 1: Free -->
+            <div class="flex-1 p-6 md:p-8 border-b md:border-b-0 md:border-r border-white/10 flex flex-col">
+                <h3 class="text-xl font-semibold text-white mb-2">Free</h3>
+                <div class="text-2xl font-bold text-gray-400 mb-6">$0 <span class="text-base font-normal">/ month</span></div>
+                <button class="w-full py-3 rounded-lg bg-[#424242] text-gray-300 font-medium cursor-default mb-6 border border-white/5">Your Current Plan</button>
+                <div class="mb-4 text-gray-100 font-medium">For people just starting out</div>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Unlimited messages, interactions, and history</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Access to our basic model</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Access on Web, iOS, and Android</span></li>
+                </ul>
+            </div>
+
+            <!-- Column 2: Plus -->
+            <div class="flex-1 p-6 md:p-8 flex flex-col relative overflow-hidden bg-[#212121]/50">
+                <h3 class="text-xl font-semibold text-white mb-2 flex items-center gap-2">Plus <span class="text-xs font-bold text-[#facc15] tracking-wide">PLUS</span></h3>
+                <div class="text-2xl font-bold text-white mb-6">$20 <span class="text-base font-normal text-gray-400">/ month</span></div>
+                <button id="upgradeBtnAction" onclick="handleUpgradeAction()" class="w-full py-3 rounded-lg bg-[#10a37f] hover:bg-[#0d8e6d] text-white font-medium transition-colors mb-6 shadow-lg shadow-[#10a37f]/20">Upgrade to Plus</button>
+                <div class="mb-4 text-gray-100 font-medium">Everything in Free, and:</div>
+                <ul class="space-y-3 text-sm text-gray-300">
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-[#10a37f] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Access to Gemini 2.5 Flash</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-[#10a37f] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Up to 5x more messages</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-[#10a37f] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Access to advanced data analysis, file uploads, vision, and web browsing</span></li>
+                     <li class="flex items-start gap-3"><svg class="w-5 h-5 text-[#10a37f] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Gemini Image Generation</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal Overlay -->
+    <div id="settingsOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4 transition-opacity duration-200 opacity-0" onclick="if(event.target === this) closeSettings()">
+        <div class="bg-[#2f2f2f] w-full max-w-2xl rounded-xl shadow-2xl border border-white/10 overflow-hidden transform transition-all duration-200 scale-95 flex flex-col h-[500px]" id="settingsModalContent">
+            
+            <div class="flex items-center justify-between p-4 border-b border-white/10">
+                <h2 class="text-lg font-medium text-white">Settings</h2>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Sidebar -->
+                <div class="w-1/3 border-r border-white/10 bg-[#171717] p-2 flex flex-col gap-1">
+                    <button onclick="switchSettingsTab('general')" id="tab-general" class="settings-tab active flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        General
+                    </button>
+                    <button onclick="switchSettingsTab('data')" id="tab-data" class="settings-tab flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Data controls
+                    </button>
+                </div>
+                <!-- Content -->
+                <div class="flex-1 bg-[#212121] p-6 overflow-y-auto">
+                    <!-- General Tab -->
+                    <div id="content-general" class="space-y-6">
+                        <div>
+                            <label class="text-sm text-white font-medium block mb-2">OpenAI API Key (ChatGPT)</label>
+                            <input id="settingOpenAIKey" type="password" placeholder="sk-..." class="w-full bg-[#171717] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#10a37f]">
+                            <p class="text-xs text-gray-500 mt-1">Provide your own key to use ChatGPT models for text. Images will still use Gemini.</p>
+                            <button onclick="saveOpenAIKey()" class="mt-2 text-xs bg-[#424242] text-white px-2 py-1 rounded hover:bg-[#525252]">Save Key</button>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-white/10 pt-6">
+                            <div class="text-sm text-white font-medium">Theme</div>
+                            <div class="flex items-center gap-1 bg-[#171717] p-1 rounded-lg border border-white/10">
+                                <button class="px-3 py-1.5 rounded-md text-xs font-medium bg-[#2f2f2f] text-white shadow-sm">System</button>
+                                <button class="px-3 py-1.5 rounded-md text-xs font-medium text-gray-400 hover:text-white">Dark</button>
+                                <button class="px-3 py-1.5 rounded-md text-xs font-medium text-gray-400 hover:text-white">Light</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Data Controls Tab -->
+                    <div id="content-data" class="hidden space-y-6">
+                        <div class="pt-2">
+                            <h3 class="text-sm font-medium text-white mb-4">Chat History</h3>
+                            <button onclick="clearAllChats()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 hover:bg-red-500/20 transition-colors w-full text-left">
+                                Clear all chats
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2">Delete all your chat history from this device.</p>
+                        </div>
+                        <div class="border-t border-white/10 pt-6">
+                             <button onclick="deleteAccount()" class="px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 hover:bg-red-500/20 transition-colors w-full text-left">
+                                Delete account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Overlay -->
+    <div id="billingOverlay" class="fixed inset-0 bg-[#121212] z-[100] hidden flex flex-col items-center justify-center transition-opacity duration-300 opacity-0">
+        <!-- State 1: Loading Animation -->
+        <div id="billingLoading" class="flex flex-col items-center gap-4">
+             <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+             <div class="text-white text-lg font-medium">Loading secure checkout...</div>
+        </div>
+        <!-- State 2: Billing Form -->
+        <div id="billingForm" class="hidden w-full h-full flex flex-col md:flex-row max-w-6xl mx-auto md:h-auto md:min-h-[600px] overflow-hidden">
+            <!-- Left Side: Summary -->
+            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-8 text-white font-bold text-xl">
+                        <div class="w-8 h-8 bg-white rounded-full text-black flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                        </div>
+                        ChatOPT Inc.
+                    </div>
+                    <div class="text-gray-400 text-sm font-medium mb-2 uppercase tracking-wide">Subscribe to ChatOPT Plus</div>
+                    <div class="flex items-baseline gap-1 mb-8">
+                        <span class="text-4xl font-bold text-white">$20.00</span>
+                        <span class="text-gray-400">/ month</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 text-white">
+                            <div class="bg-[#10a37f]/20 p-1 rounded"><svg class="w-5 h-5 text-[#10a37f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+                            <span>ChatOPT Plus Subscription</span>
+                        </div>
+                        <div class="text-gray-400 text-sm ml-9">Billed monthly. Cancel anytime.</div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-8 border-t border-white/10 flex justify-between text-white font-medium"><span>Total due today</span><span>$20.00</span></div>
+            </div>
+            <!-- Right Side: Inputs -->
+            <div class="w-full md:w-1/2 bg-[#171717] md:rounded-l-2xl p-8 md:p-12 shadow-2xl flex flex-col overflow-y-auto">
+                <h2 class="text-xl font-semibold text-white mb-6">Payment Information</h2>
+                <form id="paymentForm" class="space-y-5" novalidate>
+                    <div>
+                        <label class="billing-label" for="billingEmail">Email information</label>
+                        <input type="email" id="billingEmail" class="w-full billing-input rounded-md px-4 py-3" placeholder="you@example.com">
+                        <div id="errorEmail" class="error-msg"></div>
+                    </div>
+                    <div>
+                        <label class="billing-label">Card information</label>
+                        <div class="flex flex-col">
+                            <div class="relative z-0"><input type="text" id="billingCard" class="w-full billing-input rounded-t-md px-4 py-3 border-b-0 focus:z-10 relative" placeholder="1234 1234 1234 1234" maxlength="19"></div>
+                            <div class="flex relative z-0">
+                                <input type="text" id="billingExpiry" class="w-1/2 billing-input rounded-bl-md px-4 py-3 border-r-0 focus:z-10 relative" placeholder="MM / YY" maxlength="7">
+                                <input type="text" id="billingCVC" class="w-1/2 billing-input rounded-br-md px-4 py-3 focus:z-10 relative" placeholder="CVC" maxlength="4">
+                            </div>
+                        </div>
+                        <div class="flex flex-col mt-1">
+                             <div id="errorCard" class="error-msg h-0 overflow-hidden"></div>
+                             <div class="flex gap-2"><div id="errorExpiry" class="error-msg w-1/2"></div><div id="errorCVC" class="error-msg w-1/2"></div></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="billing-label" for="billingName">Name on card</label>
+                        <input type="text" id="billingName" class="w-full billing-input rounded-md px-4 py-3" placeholder="Full name on card">
+                        <div id="errorName" class="error-msg"></div>
+                    </div>
+                    <div>
+                        <label class="billing-label">Country or region</label>
+                        <select id="billingCountry" class="w-full billing-input rounded-md px-4 py-3 appearance-none">
+                            <option>United States</option>
+                            <option>United Kingdom</option>
+                            <option>Canada</option>
+                            <option>France</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="payButton" class="w-full bg-[#10a37f] hover:bg-[#0d8e6d] text-white font-bold py-4 rounded-lg mt-6 transition-colors shadow-lg flex items-center justify-center gap-2">Subscribe</button>
+                    <div class="text-xs text-gray-500 text-center mt-4">By clicking "Subscribe", you agree to our Terms and Privacy Policy.</div>
+                </form>
+            </div>
+            <button onclick="closeBilling()" class="absolute top-6 right-6 text-gray-400 hover:text-white hidden md:block">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <!-- State 3: Error -->
+        <div id="billingError" class="hidden flex flex-col items-center justify-center w-full h-full relative">
+            <div class="circle-loader load-complete mb-8"><div class="checkmark draw"></div><div class="cross"></div></div>
+            <h2 class="text-2xl font-bold text-white mb-2">Payment Failed</h2>
+            <p class="text-gray-400 text-center max-w-md px-4">You have entered wrong information. Please check your card details and try again later.</p>
+            <button onclick="closeBilling()" class="absolute bottom-8 left-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors group px-4 py-2 hover:bg-white/10 rounded-lg">
+                <div class="bg-gray-700 rounded-full p-1 group-hover:bg-gray-600 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                <span class="font-medium">Close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Modal Overlay -->
+    <div id="searchOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-start justify-center pt-20 px-4 transition-opacity duration-200 opacity-0" onclick="if(event.target === this) closeSearch()">
+        <div class="bg-[#2f2f2f] w-full max-w-2xl rounded-xl shadow-2xl border border-white/10 overflow-hidden transform transition-all duration-200 scale-95" id="searchModalContent">
+            <div class="p-4 border-b border-white/10 flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input id="searchInput" type="text" placeholder="Search chats..." class="flex-1 bg-transparent text-white placeholder-gray-400 text-lg focus:outline-none" autocomplete="off">
+                <button onclick="closeSearch()" class="text-gray-400 hover:text-white bg-[#424242] hover:bg-[#525252] rounded-md px-2 py-1 text-xs font-medium transition-colors">ESC</button>
+            </div>
+            <div id="searchResults" class="max-h-[60vh] overflow-y-auto min-h-[100px] p-2">
+                <div class="flex flex-col items-center justify-center py-10 text-gray-400"><p class="text-sm">Type to search your chat history</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 flex flex-col bg-[#171717] border-r border-white/5 transform -translate-x-full md:translate-x-0 md:relative flex-shrink-0 w-[260px]">
+        
+        <!-- EXPANDED VIEW -->
+        <div id="sidebar-expanded" class="sidebar-content visible-content flex-col h-full w-full">
+            <div class="flex items-center justify-between px-3 py-3">
+                 <div class="p-2 hover:bg-[#212121] rounded-lg cursor-pointer transition-colors group" onclick="startNewChat()">
+                    <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center text-black shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                    </div>
+                 </div>
+                 <button onclick="toggleDesktopSidebar()" class="p-2 text-gray-400 hover:text-white hover:bg-[#212121] rounded-lg transition-colors" title="Close sidebar (Ctrl+B)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 3v18"/></svg>
+                 </button>
+                 <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 3v18"/></svg>
+                 </button>
+            </div>
+
+            <div class="px-2 pb-4 space-y-1">
+                <button onclick="startNewChat()" class="flex items-center gap-3 px-3 py-2 w-full text-left rounded-lg hover:bg-[#212121] text-sm font-medium text-white transition-colors group" title="New chat (Ctrl+N)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>New chat</span>
+                </button>
+                <button onclick="openSearch()" class="flex items-center gap-3 px-3 py-2 w-full text-left rounded-lg hover:bg-[#212121] text-sm font-medium text-white transition-colors group" title="Search chats (Ctrl+K)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Search chats</span>
+                </button>
+                <button onclick="openLibrary()" class="flex items-center gap-3 px-3 py-2 w-full text-left rounded-lg hover:bg-[#212121] text-sm font-medium text-white transition-colors group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg><span>Library</span>
+                </button>
+                <button onclick="openUpgradeModal()" class="flex items-center gap-3 px-3 py-2 w-full text-left rounded-lg hover:bg-[#212121] text-sm font-medium text-white transition-colors group">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg><span>Upgrade Plan</span>
+                </button>
+            </div>
+
+            <div class="px-5 pb-2 pt-2 text-xs font-medium text-gray-500 hover:text-gray-300 cursor-pointer transition-colors flex items-center gap-1">Your chats <span class="text-[10px] mt-0.5">›</span></div>
+            <div class="flex-1 overflow-y-auto px-2 py-1 scrollbar-thin" id="chatList"></div>
+            <div class="p-2 border-t border-white/5 relative" id="userSection"></div>
+        </div>
+
+        <!-- COLLAPSED VIEW -->
+        <div id="sidebar-collapsed" class="sidebar-content hidden-content flex-col h-full w-full items-center py-4 gap-4">
+            <button onclick="startNewChat()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#212121] text-white transition-colors" title="New Chat (Ctrl+N)">
+                <div class="w-6 h-6 bg-white rounded-full flex items-center justify-center text-black shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                </div>
+            </button>
+            <button onclick="startNewChat()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#212121] text-gray-400 hover:text-white transition-colors" title="New chat (Ctrl+N)">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </button>
+            <button onclick="openSearch()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#212121] text-gray-400 hover:text-white transition-colors" title="Search (Ctrl+K)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </button>
+            <button onclick="openLibrary()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#212121] text-gray-400 hover:text-white transition-colors" title="Library">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            </button>
+            <div class="flex-1"></div>
+            <button onclick="openUpgradeModal()" class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#212121] text-gray-400 hover:text-white transition-colors mb-1" title="Upgrade Plan">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            </button>
+            <button onclick="toggleDesktopSidebar()" id="miniUserBtn" class="w-10 h-10 flex items-center justify-center rounded-full text-white font-semibold text-xs mb-2 overflow-hidden shadow-md">
+                <span id="miniUserInitials">?</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative w-full bg-[#212121]">
+        <div class="flex items-center justify-between p-2 md:hidden bg-[#212121] text-gray-300">
+            <button onclick="toggleMobileSidebar()" class="p-2 hover:bg-[#2f2f2f] rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+            </button>
+            <span class="font-semibold text-white">ChatOPT</span>
+            <button onclick="startNewChat()" class="p-2 hover:bg-[#2f2f2f] rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+        </div>
+
+        <div class="hidden md:flex items-center justify-between p-3 absolute top-0 left-0 w-full z-10 bg-[#212121]/90 backdrop-blur-sm">
+            <div class="flex items-center min-w-[40px]">
+                <button onclick="toggleDesktopSidebar()" id="desktopSidebarToggle" class="p-2 text-gray-400 hover:text-white hover:bg-[#2f2f2f] rounded-lg transition-colors opacity-0 pointer-events-none" title="Toggle Sidebar (Ctrl+B)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 3v18"/></svg>
+                </button>
+            </div>
+            
+            <div class="relative">
+                <button onclick="toggleModelSelector()" id="modelSelectorBtn" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[#2f2f2f] text-gray-200 font-medium transition-colors group">
+                    <span class="text-lg opacity-90">ChatOPT 2.5</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 group-hover:text-gray-300 transition-colors"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                <div id="modelDropdown" class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-[#2f2f2f] border border-white/10 rounded-xl shadow-2xl p-2 hidden z-50 transform origin-top transition-all duration-200">
+                    <div class="p-3 flex items-start justify-between rounded-lg bg-[#212121] mb-1 cursor-default">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 text-[#10a37f] flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-white">ChatOPT 2.5</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Great for everyday tasks. Fast and reliable.</div>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+
+                    <div onclick="openUpgradeModal(); toggleModelSelector()" class="p-3 flex items-start justify-between rounded-lg hover:bg-[#212121] cursor-pointer group transition-colors">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-transparent border border-white/20 text-[#ab68ff] group-hover:bg-[#ab68ff]/10 group-hover:border-[#ab68ff]/50 transition-colors flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-white group-hover:text-[#ab68ff] transition-colors">ChatOPT 3.0</div>
+                                <div class="text-xs text-gray-400 mt-0.5">Our smartest model. High reasoning.</div>
+                            </div>
+                        </div>
+                        <div class="px-2 py-0.5 rounded-full border border-[#ab68ff] text-[#ab68ff] text-[10px] font-bold uppercase tracking-wide">Plus</div>
+                    </div>
+
+                    <div class="h-px bg-white/10 my-2 mx-1"></div>
+
+                    <button onclick="openUpgradeModal(); toggleModelSelector()" class="w-full flex items-center justify-between px-3 py-3 text-sm text-gray-200 hover:bg-[#212121] rounded-lg transition-colors group">
+                        <div class="flex items-center gap-3">
+                            <div class="p-1 bg-white rounded text-black">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></svg>
+                            </div>
+                            <span class="font-medium">Upgrade to Plus</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="min-w-[40px]"></div>
+        </div>
+
+        <div id="chatContainer" class="flex-1 overflow-y-auto pb-32 pt-14 scroll-smooth">
+            <div id="welcomeScreen" class="h-full flex flex-col items-center justify-center p-4">
+                <div class="bg-white/10 p-4 rounded-full mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                </div>
+                <h2 class="text-2xl font-semibold text-white mb-8">How can I help you today?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+                    <button onclick="prefill('Create a cyberpunk city image')" class="text-left p-4 rounded-xl border border-white/10 hover:bg-[#2f2f2f] transition-colors group">
+                        <div class="font-medium text-white mb-1">Create image</div>
+                        <div class="text-xs text-gray-400">Cyberpunk city landscape</div>
+                    </button>
+                    <button onclick="prefill('Explain quantum computing')" class="text-left p-4 rounded-xl border border-white/10 hover:bg-[#2f2f2f] transition-colors group">
+                        <div class="font-medium text-white mb-1">Explain concept</div>
+                        <div class="text-xs text-gray-400">Quantum computing basics</div>
+                    </button>
+                    <button onclick="prefill('Write a python script to parse CSV')" class="text-left p-4 rounded-xl border border-white/10 hover:bg-[#2f2f2f] transition-colors group">
+                        <div class="font-medium text-white mb-1">Code snippet</div>
+                        <div class="text-xs text-gray-400">Python CSV parser</div>
+                    </button>
+                    <button onclick="prefill('Draft a professional email')" class="text-left p-4 rounded-xl border border-white/10 hover:bg-[#2f2f2f] transition-colors group">
+                        <div class="font-medium text-white mb-1">Draft email</div>
+                        <div class="text-xs text-gray-400">Professional follow-up</div>
+                    </button>
+                </div>
+            </div>
+            <div id="messagesList" class="flex flex-col w-full"></div>
+            <div id="libraryContainer" class="hidden flex flex-col w-full h-full p-8">
+                <h2 class="text-2xl font-bold text-white mb-6 sticky top-0 bg-[#212121] z-10 py-2">Image Library</h2>
+                <div id="libraryLoading" class="flex-1 flex flex-col items-center justify-center gap-6">
+                     <div class="relative w-16 h-16">
+                         <div class="absolute inset-0 border-4 border-[#10a37f] border-t-transparent rounded-full animate-spin"></div>
+                         <div class="absolute inset-2 border-4 border-white border-b-transparent rounded-full animate-spin" style="animation-direction: reverse;"></div>
+                     </div>
+                     <p class="text-gray-400 text-sm animate-pulse">Loading your creative assets...</p>
+                </div>
+                <div id="libraryGrid" class="hidden grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full bg-[#212121] pt-2 pb-6 px-4">
+            <div class="max-w-3xl mx-auto w-full relative">
+                <div id="suggestionMenu" class="absolute bottom-full left-0 mb-3 w-72 bg-[#2f2f2f] border border-white/10 rounded-xl shadow-2xl overflow-hidden hidden z-30 p-1.5 ring-1 ring-black/5">
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider px-3 py-1.5">Suggested Prompts</div>
+                    <div id="suggestionList" class="flex flex-col gap-0.5"></div>
+                </div>
+                <div id="inputMenu" class="absolute bottom-full left-0 mb-3 w-64 bg-[#2f2f2f] border border-white/10 rounded-xl shadow-2xl overflow-hidden hidden z-30 p-1.5 ring-1 ring-black/5">
+                    <button onclick="selectInputOption('upload')" class="menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        <div class="flex flex-col text-left"><span class="font-medium text-gray-200">Upload Image</span><span class="text-xs text-gray-500">From your device</span></div>
+                    </button>
+                    <button onclick="selectInputOption('camera')" class="menu-item">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                         <div class="flex flex-col text-left"><span class="font-medium text-gray-200">Take Photo</span><span class="text-xs text-gray-500">Use your camera</span></div>
+                    </button>
+                    <div class="h-px bg-white/10 my-1"></div>
+                    <button onclick="selectInputOption('reasoning')" class="menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                         <div class="flex flex-col text-left"><span class="font-medium text-gray-200">Think Deep</span><span class="text-xs text-gray-500">Enhanced reasoning</span></div>
+                    </button>
+                     <button onclick="selectInputOption('web')" class="menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                         <div class="flex flex-col text-left"><span class="font-medium text-gray-200">Web Search</span><span class="text-xs text-gray-500">Browse the internet</span></div>
+                    </button>
+                </div>
+                <div id="imagePreview" class="hidden mb-2 relative inline-block group ml-2">
+                    <img id="previewImg" src="" class="h-16 w-16 rounded-lg object-cover border border-white/20">
+                    <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-gray-700 text-white rounded-full p-0.5 shadow-md border border-white/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="bg-[#2f2f2f] rounded-3xl p-3 border border-transparent focus-within:border-gray-500/50 shadow-sm transition-colors relative" id="inputContainer">
+                    <div id="activeModesContainer" class="hidden flex flex-wrap gap-2 mb-2 px-1">
+                        <div id="thinkingBadge" class="hidden flex items-center gap-1.5 bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-xs font-medium border border-purple-500/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                            Thinking
+                            <button onclick="toggleThinkingMode()" class="ml-1 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        </div>
+                         <div id="webBadge" class="hidden flex items-center gap-1.5 bg-orange-500/20 text-orange-300 px-2 py-0.5 rounded text-xs font-medium border border-orange-500/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            Search
+                            <button onclick="toggleWebMode()" class="ml-1 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="toggleInputMenu()" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-black/20 mr-2 shrink-0 h-10 w-10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
+                        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileSelect(event)">
+                        <textarea id="userInput" rows="1" class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none resize-none max-h-[200px] py-2" placeholder="Message ChatOPT" oninput="autoResize(this)" onkeydown="handleEnter(event)"></textarea>
+                        <button id="micBtn" onclick="toggleVoiceInput()" class="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-black/20 mr-1 shrink-0 h-10 w-10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </button>
+                        <button id="sendBtn" onclick="sendMessage()" class="p-1.5 ml-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center text-[11px] text-gray-500 mt-2">ChatOPT can make mistakes. Check important info.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Redesigned) -->
+    <div id="authOverlay" class="fixed inset-0 z-[60] hidden flex items-center justify-center auth-bg">
+        <div class="bg-[#171717] p-8 rounded-2xl w-full max-w-[400px] shadow-2xl border border-white/10 relative overflow-hidden group">
+            <div class="flex justify-center mb-6">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg shadow-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>
+                </div>
+            </div>
+
+            <h2 class="text-3xl font-bold text-white mb-2 text-center tracking-tight">Welcome back</h2>
+            <p class="text-gray-400 text-center mb-8 text-sm">Enter your details to access your workspace</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">FULL NAME</label>
+                    <input id="authName" class="w-full bg-[#212121] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#10a37f] focus:ring-1 focus:ring-[#10a37f] transition-all placeholder-gray-600" placeholder="John Doe">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">EMAIL ADDRESS</label>
+                    <input id="authEmail" class="w-full bg-[#212121] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#10a37f] focus:ring-1 focus:ring-[#10a37f] transition-all placeholder-gray-600" placeholder="name@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">PASSWORD</label>
+                    <input id="authPass" type="password" class="w-full bg-[#212121] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#10a37f] focus:ring-1 focus:ring-[#10a37f] transition-all placeholder-gray-600" placeholder="••••••••">
+                </div>
+            </div>
+
+            <button onclick="handleAuth()" class="w-full bg-[#10a37f] hover:bg-[#0d8e6d] text-white font-bold py-3.5 rounded-xl transition-all mt-8 shadow-lg shadow-[#10a37f]/20 hover:shadow-[#10a37f]/40 transform hover:-translate-y-0.5">Continue</button>
+            <button onclick="closeAuth()" class="w-full mt-4 text-gray-500 text-xs hover:text-white transition-colors">Cancel</button>
+        </div>
+    </div>
+<script type="module">
+    import { GoogleGenAI } from "@google/genai";
+
+    // --- IndexedDB Helper ---
+    const DB_CONFIG = { name: 'ChatOPT_DB', version: 3 };
+    const db = {
+        _db: null,
+        async open() {
+            if (this._db) return this._db;
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats', { keyPath: 'email' });
+                    if (!db.objectStoreNames.contains('library')) db.createObjectStore('library', { keyPath: 'email' });
+                };
+                req.onsuccess = () => { this._db = req.result; resolve(this._db); };
+                req.onerror = () => reject(req.error);
+            });
+        },
+        async get(store, key) {
+            const db = await this.open();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction(store, 'readonly').objectStore(store).get(key);
+                req.onsuccess = () => resolve(req.result ? req.result.data : null);
+                req.onerror = () => reject(req.error);
+            });
+        },
+        async put(store, key, data) {
+            const db = await this.open();
+            return new Promise((resolve, reject) => {
+                const val = { email: key, data };
+                const req = db.transaction(store, 'readwrite').objectStore(store).put(val);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        },
+        async getAll(store) {
+            const db = await this.open();
+            return new Promise((resolve, reject) => {
+                const req = db.transaction(store, 'readonly').objectStore(store).getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+    };
+
+    function safeLocalStorageSet(key, value) {
+        try { localStorage.setItem(key, value); } catch (e) {}
+    }
+
+    function getUserColor(name) {
+        const colors = [
+            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500', 'bg-lime-500', 
+            'bg-green-500', 'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500', 
+            'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 
+            'bg-pink-500', 'bg-rose-500'
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    // --- State ---
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem("user") || "null"); } catch(e) { console.error(e); }
+
+    let chats = [];
+    let library = []; 
+    let activeChatId = null;
+    let pendingImage = null;
+    let searchTimeout = null;
+    let thinkingMode = false;
+    let webMode = false;
+    let openaiApiKey = localStorage.getItem('openai_key') || "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";
+    let chatToDeleteId = null;
+
+    // --- DOM Elements ---
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const messagesList = document.getElementById("messagesList");
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const sidebar = document.getElementById("sidebar");
+    const sidebarExpanded = document.getElementById("sidebar-expanded");
+    const sidebarCollapsed = document.getElementById("sidebar-collapsed");
+    const imagePreview = document.getElementById("imagePreview");
+    const previewImg = document.getElementById("previewImg");
+    const miniUserInitials = document.getElementById("miniUserInitials");
+    const miniUserBtn = document.getElementById("miniUserBtn");
+    const desktopSidebarToggle = document.getElementById("desktopSidebarToggle");
+    const inputMenu = document.getElementById("inputMenu");
+    const activeModesContainer = document.getElementById("activeModesContainer");
+    const thinkingBadge = document.getElementById("thinkingBadge");
+    const webBadge = document.getElementById("webBadge");
+    const searchOverlay = document.getElementById("searchOverlay");
+    const searchInput = document.getElementById("searchInput");
+    const searchResults = document.getElementById("searchResults");
+    const upgradeOverlay = document.getElementById("upgradeOverlay");
+    const settingsOverlay = document.getElementById("settingsOverlay");
+    const billingOverlay = document.getElementById("billingOverlay");
+    const billingLoading = document.getElementById("billingLoading");
+    const billingForm = document.getElementById("billingForm");
+    const billingError = document.getElementById("billingError");
+    const payButton = document.getElementById("payButton");
+    const libraryContainer = document.getElementById("libraryContainer");
+    const libraryLoading = document.getElementById("libraryLoading");
+    const libraryGrid = document.getElementById("libraryGrid");
+    const apiKeyOverlay = document.getElementById('apiKeyOverlay');
+    const suggestionMenu = document.getElementById("suggestionMenu");
+    const suggestionList = document.getElementById("suggestionList");
+    const deleteOverlay = document.getElementById("deleteOverlay");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+    // --- Suggestions Logic ---
+    userInput.addEventListener('input', () => {
+        const text = userInput.value.toLowerCase().replace(/\s+/g, ' ').trim();
+        const triggers = ['create image', 'generate image', 'draw a', 'draw an', 'draw me', 'make an image'];
+        
+        if (triggers.some(t => text.endsWith(t) || t === text)) {
+            const prompts = [
+                "a cat wearing a party hat",
+                "a serene landscape at sunset",
+                "a futuristic cyberpunk city with neon lights",
+                "an oil painting of a cozy cottage"
+            ];
+            
+            suggestionList.innerHTML = '';
+            prompts.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = "text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#424242] rounded-lg transition-colors w-full flex items-center gap-2";
+                btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#10a37f] shrink-0"></span><span class="truncate">${p}</span>`;
+                btn.onclick = () => {
+                    let current = userInput.value;
+                    let separator = " ";
+                    // Simple logic to append cleanly
+                    if (!current.endsWith(' ')) separator = " ";
+                    userInput.value = current.trim() + separator + p;
+                    suggestionMenu.classList.add('hidden');
+                    autoResize(userInput);
+                    userInput.focus();
+                };
+                suggestionList.appendChild(btn);
+            });
+            suggestionMenu.classList.remove('hidden');
+        } else {
+            suggestionMenu.classList.add('hidden');
+        }
+    });
+
+    // --- Voice Input ---
+    let recognition;
+    let isRecording = false;
+    let voiceStartText = "";
+
+    function initVoice() {
+        const btn = document.getElementById('micBtn');
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            if(btn) btn.classList.add('hidden');
+            return;
+        }
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+            isRecording = true;
+            if(btn) {
+                btn.classList.add('text-red-500', 'animate-pulse'); 
+                btn.classList.remove('text-gray-400', 'hover:text-white');
+            }
+            voiceStartText = userInput.value;
+            if (voiceStartText && !voiceStartText.endsWith(' ') && !voiceStartText.endsWith('\n')) voiceStartText += ' ';
+            userInput.placeholder = "Listening...";
+        };
+
+        recognition.onresult = (event) => {
+            let interim = "";
+            let final = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) final += event.results[i][0].transcript;
+                else interim += event.results[i][0].transcript;
+            }
+            userInput.value = voiceStartText + final + interim;
+            autoResize(userInput);
+            toggleSendBtn();
+            userInput.scrollTop = userInput.scrollHeight;
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            if(btn) {
+                btn.classList.remove('text-red-500', 'animate-pulse');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            }
+            userInput.placeholder = "Message ChatOPT";
+            userInput.focus();
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Voice error", event.error);
+            if (event.error === 'not-allowed' || event.error === 'permission-denied') alert("Microphone permission denied.");
+            recognition.stop();
+        };
+    }
+
+    function toggleVoiceInput() {
+        if(!recognition) return;
+        if(isRecording) recognition.stop();
+        else { try { recognition.start(); } catch(e) { recognition.stop(); } }
+    }
+
+    // --- API Key Management ---
+    async function checkApiKeyStatus() {
+        let key = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+        if (!key && window.aistudio) {
+            const hasKey = await window.aistudio.hasSelectedApiKey();
+            if (!hasKey) {
+                showApiOverlay(true);
+            }
+        } else if (!key) {
+             showApiOverlay(false);
+        }
+    }
+    
+    function showApiOverlay(canSelect) {
+        if(openaiApiKey) {
+             apiKeyOverlay.classList.add('hidden');
+             return;
+        }
+
+        apiKeyOverlay.classList.remove('hidden');
+        const btn = document.getElementById('connectApiBtn');
+        const noEnv = document.getElementById('noEnvMsg');
+        
+        if(canSelect) {
+            btn.classList.remove('hidden');
+            noEnv.classList.add('hidden');
+        } else {
+            btn.classList.add('hidden');
+            noEnv.classList.remove('hidden');
+        }
+    }
+    
+    window.requestApiKey = async function() {
+         if(window.aistudio) {
+             try {
+                 document.getElementById('apiStatusMsg').innerText = "Opening selection dialog...";
+                 await window.aistudio.openSelectKey();
+                 apiKeyOverlay.classList.add('hidden');
+             } catch(e) {
+                 console.error(e);
+                 alert("Failed to select key.");
+             }
+         }
+    }
+    
+    window.saveOpenAIKey = function() {
+        const key = document.getElementById('settingOpenAIKey').value.trim();
+        if(key) {
+            openaiApiKey = key;
+            localStorage.setItem('openai_key', key);
+            alert("OpenAI API Key saved. Text chats will now use ChatGPT.");
+        } else {
+            openaiApiKey = "";
+            localStorage.removeItem('openai_key');
+            alert("OpenAI API Key removed. Reverting to Gemini for text.");
+        }
+    }
+
+    // --- Initialization ---
+    async function init() {
+        await checkApiKeyStatus();
+        
+        if(openaiApiKey) document.getElementById('settingOpenAIKey').value = openaiApiKey;
+        
+        if(user) {
+            const lsChats = localStorage.getItem('chats_' + user.email);
+            if(lsChats) {
+                try {
+                   const parsed = JSON.parse(lsChats);
+                   await db.put('chats', user.email, parsed);
+                   localStorage.removeItem('chats_' + user.email);
+                } catch(e) { console.error("Migration failed", e); }
+            }
+
+            const lsLib = localStorage.getItem('library_' + user.email);
+            if(lsLib) {
+                try {
+                    const parsed = JSON.parse(lsLib);
+                    await db.put('library', user.email, parsed);
+                    localStorage.removeItem('library_' + user.email);
+                } catch(e) { console.error("Lib migration failed", e); }
+            }
+
+            await loadChats(user.email);
+            await loadLibrary(user.email); 
+            renderUser();
+        } else {
+            renderUser(); 
+        }
+
+        initVoice();
+        marked.setOptions({
+            highlight: function(code, lang) {
+                return hljs.getLanguage(lang) ? hljs.highlight(code, { language: lang }).value : hljs.highlightAuto(code).value;
+            }
+        });
+        searchInput.addEventListener('input', (e) => handleSearchInput(e.target.value));
+        initBillingValidation();
+        window.addEventListener('storage', (e) => {
+             if(user && e.key === 'signal_update_' + user.email) loadChats(user.email);
+        });
+
+        confirmDeleteBtn.addEventListener('click', confirmDelete);
+    }
+
+    async function loadChats(email) {
+        try {
+            const data = await db.get('chats', email);
+            chats = data || [];
+        } catch(e) { chats = []; }
+        renderChatList();
+    }
+
+    async function saveChats(email) {
+        try {
+            await db.put('chats', email, chats);
+            safeLocalStorageSet('signal_update_' + email, Date.now().toString());
+        } catch(e) {}
+    }
+    
+    async function loadLibrary(email) {
+        try {
+            const data = await db.get('library', email);
+            library = data || [];
+        } catch(e) { library = []; }
+    }
+    
+    async function saveLibrary(email) {
+        try { await db.put('library', email, library); } catch(e) {}
+    }
+
+    // --- API & Chat ---
+    window.sendMessage = async function() {
+        if (!user) {
+            document.getElementById('authOverlay').classList.remove('hidden');
+            return;
+        }
+        
+        let googleKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+        if (!googleKey && window.aistudio && await window.aistudio.hasSelectedApiKey()) {
+             // In AI Studio environment, key is injected.
+        }
+
+        const text = userInput.value.trim();
+        if ((!text && !pendingImage) || !sendBtn.disabled === false) return; 
+
+        if (!activeChatId) createChat();
+
+        const chat = chats.find(c => c.id === activeChatId);
+        const userMsg = { role: 'user', content: text, image: pendingImage, timestamp: Date.now() };
+        chat.messages.push(userMsg);
+        
+        // Save user image to library immediately
+        if(pendingImage) {
+            library.unshift({ 
+                id: Date.now(), 
+                src: pendingImage, 
+                prompt: text || "Image Analysis", 
+                date: new Date().toLocaleDateString(),
+                type: 'upload' 
+            });
+            saveLibrary(user.email);
+        }
+
+        userInput.value = '';
+        autoResize(userInput);
+        const prevImage = pendingImage; 
+        clearImage();
+        renderMessages();
+        saveChats(user.email);
+
+        const botMsgId = Date.now() + 1;
+        chat.messages.push({ role: 'bot', content: '<div class="thinking-container"><div class="thinking-ball"></div></div>', id: botMsgId, timestamp: Date.now() });
+        renderMessages();
+
+        try {
+            let finalContent = "";
+            let generatedImage = null;
+
+            const isImageGeneration = text.toLowerCase().includes('create image') || 
+                                 text.toLowerCase().includes('generate image') ||
+                                 text.toLowerCase().includes('draw a') ||
+                                 text.toLowerCase().includes('draw me') ||
+                                 text.toLowerCase().includes('make an image');
+
+            if (isImageGeneration) {
+                 // --- Image Generation ---
+                 if (!googleKey) {
+                     if(window.aistudio) {
+                         const hasKey = await window.aistudio.hasSelectedApiKey();
+                         if(!hasKey) await window.aistudio.openSelectKey();
+                         googleKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+                     }
+                 }
+                 
+                 if(!googleKey) {
+                     googleKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+                     if(!googleKey) throw new Error("To generate images, please connect a Google API Key via the settings.");
+                 }
+
+                 const ai = new GoogleGenAI({ apiKey: googleKey });
+                 const isHighQuality = text.toLowerCase().includes('4k') || text.toLowerCase().includes('hq');
+                 const imgModel = isHighQuality ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+                 
+                 const response = await ai.models.generateContent({
+                    model: imgModel,
+                    contents: { parts: [{ text: text }] },
+                 });
+                 
+                 let foundImage = false;
+                 if(response.candidates && response.candidates[0].content && response.candidates[0].content.parts) {
+                     for(const part of response.candidates[0].content.parts) {
+                         if(part.inlineData) {
+                             generatedImage = `data:image/png;base64,${part.inlineData.data}`;
+                             const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                             if(msgIndex !== -1) {
+                                 chat.messages[msgIndex].image = generatedImage;
+                                 chat.messages[msgIndex].content = `Generated image for: "${text}"`;
+                             }
+                             
+                             library.unshift({ id: Date.now(), src: generatedImage, prompt: text, date: new Date().toLocaleDateString(), type: 'generated' });
+                             saveLibrary(user.email);
+                             foundImage = true;
+                         } else if (part.text && !foundImage) {
+                             finalContent += part.text;
+                         }
+                     }
+                 }
+                 if(!foundImage) {
+                     const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                     if(msgIndex !== -1) chat.messages[msgIndex].content = finalContent || "I couldn't generate an image. Please try a different description.";
+                 }
+
+            } else if (prevImage) {
+                // --- Image Analysis (Vision) using OpenAI (ChatGPT API) ---
+                if (openaiApiKey) {
+                     const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'Authorization': `Bearer ${openaiApiKey}`
+                         },
+                         body: JSON.stringify({
+                             model: "gpt-4o-mini",
+                             messages: [
+                                 {
+                                     role: "user",
+                                     content: [
+                                         { type: "text", text: text || "Describe this image." },
+                                         { type: "image_url", image_url: { url: prevImage } }
+                                     ]
+                                 }
+                             ],
+                             stream: true
+                         })
+                     });
+
+                     if(!response.ok) {
+                         const err = await response.json();
+                         throw new Error(`OpenAI Vision Error: ${err.error?.message || response.statusText}`);
+                     }
+
+                     const reader = response.body.getReader();
+                     const decoder = new TextDecoder();
+                     
+                     while(true) {
+                         const { done, value } = await reader.read();
+                         if (done) break;
+                         const chunk = decoder.decode(value);
+                         const lines = chunk.split('\n');
+                         for (const line of lines) {
+                             if (line.startsWith('data: ')) {
+                                 const data = line.slice(6);
+                                 if (data === '[DONE]') break;
+                                 try {
+                                     const json = JSON.parse(data);
+                                     const content = json.choices[0]?.delta?.content;
+                                     if (content) {
+                                         finalContent += content;
+                                         const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                                         if(msgIndex !== -1) {
+                                             chat.messages[msgIndex].content = finalContent + '<span class="writing-ball"></span>';
+                                             renderMessages();
+                                         }
+                                     }
+                                 } catch (e) {}
+                             }
+                         }
+                     }
+                } else {
+                    // Fallback to Gemini if no OpenAI key, though user requested ChatGPT API.
+                    if(!googleKey) {
+                        if(window.aistudio) {
+                            const hasKey = await window.aistudio.hasSelectedApiKey();
+                            if(!hasKey) await window.aistudio.openSelectKey();
+                            googleKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+                        }
+                    }
+                    if(!googleKey) throw new Error("Please connect OpenAI API Key for image analysis as requested.");
+                    
+                    const ai = new GoogleGenAI({ apiKey: googleKey });
+                    const mimeType = prevImage.split(';')[0].split(':')[1];
+                    const base64Data = prevImage.split(',')[1];
+                    
+                    const responseStream = await ai.models.generateContentStream({
+                        model: 'gemini-2.5-flash',
+                        contents: {
+                            parts: [
+                                { inlineData: { mimeType: mimeType, data: base64Data } },
+                                { text: text || "Describe this image." }
+                            ]
+                        }
+                    });
+
+                    for await (const chunk of responseStream) {
+                        if(chunk.text) {
+                            finalContent += chunk.text;
+                            const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                            if(msgIndex !== -1) {
+                                 chat.messages[msgIndex].content = finalContent + '<span class="writing-ball"></span>';
+                                 renderMessages(); 
+                            }
+                        }
+                    }
+                }
+                const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                if(msgIndex !== -1) {
+                    chat.messages[msgIndex].content = finalContent;
+                    renderMessages();
+                }
+
+            } else {
+                // --- Text Only (OpenAI or Gemini) ---
+                if (openaiApiKey) {
+                     const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                         method: 'POST',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'Authorization': `Bearer ${openaiApiKey}`
+                         },
+                         body: JSON.stringify({
+                             model: "gpt-4o-mini",
+                             messages: [
+                                 { role: "system", content: "You are ChatOPT, a helpful AI assistant. You answer concisely and clearly. Use Markdown for formatting." },
+                                 { role: "user", content: text }
+                             ],
+                             stream: true
+                         })
+                     });
+
+                     if(!response.ok) {
+                         const err = await response.json();
+                         throw new Error(`OpenAI Error: ${err.error?.message || response.statusText}`);
+                     }
+
+                     const reader = response.body.getReader();
+                     const decoder = new TextDecoder();
+                     
+                     while(true) {
+                         const { done, value } = await reader.read();
+                         if (done) break;
+                         const chunk = decoder.decode(value);
+                         const lines = chunk.split('\n');
+                         for (const line of lines) {
+                             if (line.startsWith('data: ')) {
+                                 const data = line.slice(6);
+                                 if (data === '[DONE]') break;
+                                 try {
+                                     const json = JSON.parse(data);
+                                     const content = json.choices[0]?.delta?.content;
+                                     if (content) {
+                                         finalContent += content;
+                                         const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                                         if(msgIndex !== -1) {
+                                             chat.messages[msgIndex].content = finalContent + '<span class="writing-ball"></span>';
+                                             renderMessages();
+                                         }
+                                     }
+                                 } catch (e) {}
+                             }
+                         }
+                     }
+                     const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                     if(msgIndex !== -1) {
+                         chat.messages[msgIndex].content = finalContent;
+                         renderMessages();
+                     }
+
+                } else {
+                    if(!googleKey) {
+                        if(window.aistudio) {
+                             const hasKey = await window.aistudio.hasSelectedApiKey();
+                             if(!hasKey) await window.aistudio.openSelectKey();
+                             googleKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : null;
+                        }
+                    }
+                    
+                    if(!googleKey) throw new Error("No API Keys configured. Please setup Google or OpenAI key.");
+                    
+                    const ai = new GoogleGenAI({ apiKey: googleKey });
+                    let modelName = 'gemini-2.5-flash';
+                    let config = {};
+                    let tools = [];
+
+                    if (thinkingMode) {
+                        modelName = 'gemini-2.5-flash-thinking';
+                        config.thinkingConfig = { thinkingBudget: 1024 };
+                    }
+                    
+                    if (webMode) tools.push({ googleSearch: {} });
+
+                    const responseStream = await ai.models.generateContentStream({
+                        model: modelName,
+                        contents: { parts: [{ text: text }] },
+                        config: {
+                            tools: tools.length > 0 ? tools : undefined,
+                            ...config
+                        }
+                    });
+
+                    for await (const chunk of responseStream) {
+                        const chunkText = chunk.text;
+                        if (chunkText) {
+                            finalContent += chunkText;
+                            const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                            if(msgIndex !== -1) {
+                                 chat.messages[msgIndex].content = finalContent + '<span class="writing-ball"></span>';
+                                 renderMessages(); 
+                            }
+                        }
+                        
+                        if (webMode && chunk.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+                             const chunks = chunk.candidates[0].groundingMetadata.groundingChunks;
+                             let sources = "\n\n**Sources:**\n";
+                             chunks.forEach((c, i) => {
+                                 if (c.web) sources += `- [${c.web.title || 'Source ' + (i+1)}](${c.web.uri})\n`;
+                             });
+                             if(sources.length > 15 && !finalContent.includes("Sources:")) finalContent += sources;
+                             const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                             if(msgIndex !== -1) {
+                                 chat.messages[msgIndex].content = finalContent + '<span class="writing-ball"></span>';
+                                 renderMessages();
+                             }
+                        }
+                    }
+                    const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+                    if(msgIndex !== -1) {
+                        chat.messages[msgIndex].content = finalContent;
+                        renderMessages();
+                    }
+                }
+            }
+            
+            if (chat.messages.length <= 2) { 
+                 try {
+                     let newTitle = "";
+                     const titlePrompt = `Summarize this prompt in 3 to 5 words for a chat title: ${text}`;
+                     
+                     if (openaiApiKey) {
+                         const r = await fetch('https://api.openai.com/v1/chat/completions', {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiApiKey}` },
+                             body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: titlePrompt }] })
+                         });
+                         const d = await r.json();
+                         if(d.choices && d.choices[0]) newTitle = d.choices[0].message.content;
+                     } else if (googleKey) {
+                         const ai = new GoogleGenAI({ apiKey: googleKey });
+                         const titleResp = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: titlePrompt });
+                         newTitle = titleResp.text;
+                     }
+                     
+                     if(newTitle) {
+                        chat.title = newTitle.replace(/"/g, '').trim();
+                        renderChatList();
+                     } else {
+                        chat.title = text.substring(0, 20);
+                        renderChatList();
+                     }
+                 } catch(e) { 
+                     chat.title = text.substring(0, 20);
+                     renderChatList();
+                 }
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            const msgIndex = chat.messages.findIndex(m => m.id === botMsgId);
+            if(msgIndex !== -1) {
+                if(error.message && error.message.includes("API Key")) {
+                    chat.messages[msgIndex].content = `Configuration Error: ${error.message}`;
+                } else {
+                    chat.messages[msgIndex].content = `Sorry, I encountered an error: ${error.message}`;
+                }
+            }
+        }
+
+        saveChats(user.email);
+        renderMessages();
+    }
+
+    // --- UI Rendering ---
+    window.renderChatList = function() {
+        const list = document.getElementById("chatList");
+        list.innerHTML = "";
+        const sortedChats = [...chats].sort((a, b) => b.timestamp - a.timestamp);
+        const groups = { 'Today': [], 'Yesterday': [], 'Previous 7 Days': [], 'Older': [] };
+        const now = new Date();
+        
+        sortedChats.forEach(chat => {
+            const date = new Date(chat.timestamp);
+            const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+            if(diffDays === 0) groups['Today'].push(chat);
+            else if(diffDays === 1) groups['Yesterday'].push(chat);
+            else if(diffDays <= 7) groups['Previous 7 Days'].push(chat);
+            else groups['Older'].push(chat);
+        });
+
+        for (const [label, groupChats] of Object.entries(groups)) {
+            if (groupChats.length === 0) continue;
+            const header = document.createElement('div');
+            header.className = "px-3 py-2 text-xs font-semibold text-gray-500 mt-2";
+            header.innerText = label;
+            list.appendChild(header);
+            groupChats.forEach(chat => {
+                const btn = document.createElement("div");
+                btn.className = `group relative flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg cursor-pointer transition-colors ${chat.id === activeChatId ? 'bg-[#212121] text-white' : 'text-gray-300 hover:bg-[#212121] hover:text-white'}`;
+                btn.onclick = () => loadChat(chat.id);
+                const span = document.createElement("span");
+                span.className = "flex-1 truncate relative z-10";
+                span.innerText = chat.title;
+                btn.appendChild(span);
+                const actions = document.createElement("div");
+                actions.className = "absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 z-20";
+                const delBtn = document.createElement("button");
+                delBtn.className = "text-gray-400 hover:text-white p-1";
+                delBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+                delBtn.onclick = (e) => { e.stopPropagation(); openDeleteModal(chat.id, chat.title); };
+                actions.appendChild(delBtn);
+                btn.appendChild(actions);
+                list.appendChild(btn);
+            });
+        }
+    }
+
+    window.renderUser = function() {
+        const container = document.getElementById("userSection");
+        const initials = user ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2) : "?";
+        const userColor = user ? getUserColor(user.name) : 'bg-gray-600';
+        
+        // Update mini initials
+        miniUserInitials.innerText = initials;
+        miniUserBtn.className = `w-10 h-10 flex items-center justify-center rounded-full text-white font-semibold text-xs mb-2 overflow-hidden shadow-md ${userColor}`;
+
+        if (!user) {
+            container.innerHTML = `
+                <button onclick="document.getElementById('authOverlay').classList.remove('hidden')" class="flex items-center gap-3 px-3 py-3 w-full text-left hover:bg-[#212121] rounded-lg transition-colors text-white font-medium">
+                    <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                    <span>Log in</span>
+                </button>`;
+        } else {
+            container.innerHTML = `
+                <div class="relative">
+                    <div id="userMenu" class="absolute bottom-full left-0 w-full mb-2 bg-[#2f2f2f] border border-white/10 rounded-xl shadow-xl hidden overflow-hidden z-20 p-1.5">
+                        <button onclick="openUpgradeModal(); toggleUserMenu()" class="menu-item rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>My plan</button>
+                        <button onclick="openSettings(); toggleUserMenu()" class="menu-item rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+                        <div class="h-px bg-white/10 my-1 mx-2"></div>
+                        <button onclick="handleLogout()" class="menu-item rounded-lg text-red-400 hover:text-red-300"><svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out</button>
+                    </div>
+                    <button onclick="toggleUserMenu()" class="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-[#212121] transition-colors text-left group">
+                        <div class="w-8 h-8 rounded-full ${userColor} text-white flex items-center justify-center text-xs font-semibold shadow-md">${initials}</div>
+                        <div class="flex-1 min-w-0"><div class="text-sm font-medium text-white truncate">${user.name}</div><div class="text-xs text-gray-500 truncate">Free Plan</div></div>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                </div>`;
+        }
+    }
+    
+    window.toggleUserMenu = function() {
+        const menu = document.getElementById('userMenu');
+        if(menu) menu.classList.toggle('hidden');
+    }
+    
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('userMenu');
+        const btn = document.getElementById('userSection');
+        if (menu && !menu.classList.contains('hidden') && !btn.contains(e.target)) menu.classList.add('hidden');
+    });
+
+    window.renderMessages = function() {
+        messagesList.innerHTML = '';
+        const chat = chats.find(c => c.id === activeChatId);
+        
+        if (!chat || chat.messages.length === 0) {
+            welcomeScreen.classList.remove('hidden');
+            messagesList.classList.add('hidden');
+            return;
+        }
+
+        welcomeScreen.classList.add('hidden');
+        messagesList.classList.remove('hidden');
+
+        chat.messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = "w-full px-4 py-6 text-gray-100 border-b border-black/5 bg-[#212121]";
+            const inner = document.createElement('div');
+            inner.className = "max-w-3xl mx-auto flex gap-4 md:gap-6";
+            
+            // Avatar Rendering
+            const avatar = document.createElement('div');
+            if (msg.role === 'bot') {
+                 avatar.className = `w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-[#10a37f] shadow-md`;
+                 avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5c0-5.523 4.477-10 10-10z"/></svg>`;
+            } else {
+                 const initials = user ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2) : "U";
+                 const userColor = user ? getUserColor(user.name) : 'bg-gray-500';
+                 avatar.className = `w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${userColor} text-white text-xs font-bold shadow-md`;
+                 avatar.innerText = initials;
+            }
+            inner.appendChild(avatar);
+
+            const content = document.createElement('div');
+            content.className = "prose prose-invert max-w-none flex-1 overflow-hidden";
+            
+            if(msg.image) {
+                const img = document.createElement('img');
+                img.src = msg.image;
+                img.className = "max-h-64 rounded-lg mb-4 border border-white/10";
+                content.appendChild(img);
+            }
+            
+            if (msg.role === 'bot') {
+                if(msg.content.includes('<div class="thinking-container">')) {
+                    content.innerHTML = msg.content;
+                } else {
+                    const hasCursor = msg.content.includes('<span class="writing-ball"></span>');
+                    let cleanContent = hasCursor ? msg.content.replace('<span class="writing-ball"></span>', '') : msg.content;
+                    
+                    content.innerHTML = marked.parse(cleanContent);
+                    
+                    if(hasCursor) {
+                         content.innerHTML += '<span class="writing-ball"></span>';
+                    }
+                }
+            } else content.innerText = msg.content;
+            
+            if (msg.role === 'bot' && !msg.content.includes('thinking-container')) {
+                 const footer = document.createElement('div');
+                 footer.className = "flex items-center gap-2 mt-2";
+                 footer.innerHTML = `<button class="text-gray-500 hover:text-gray-300 transition-colors" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.innerText)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>`;
+                 content.appendChild(footer);
+            }
+            inner.appendChild(content);
+            div.appendChild(inner);
+            messagesList.appendChild(div);
+        });
+        const container = document.getElementById("chatContainer");
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // --- Actions ---
+    window.startNewChat = function() {
+        createChat();
+        renderChatList();
+        renderMessages();
+        userInput.focus();
+        if(window.innerWidth < 768) {
+             document.getElementById('mobileOverlay').classList.add('hidden');
+             sidebar.classList.remove('translate-x-0');
+             sidebar.classList.add('-translate-x-full');
+        }
+    }
+
+    function createChat() {
+        const newChat = { id: Date.now(), title: 'New Chat', messages: [], timestamp: Date.now() };
+        chats.unshift(newChat);
+        activeChatId = newChat.id;
+        thinkingMode = false;
+        webMode = false;
+        updateModeBadges();
+        document.getElementById('libraryContainer').classList.add('hidden');
+        document.getElementById('messagesList').classList.remove('hidden');
+    }
+
+    window.loadChat = function(id) {
+        activeChatId = id;
+        document.getElementById('libraryContainer').classList.add('hidden');
+        document.getElementById('messagesList').classList.remove('hidden');
+        renderChatList();
+        renderMessages();
+         if(window.innerWidth < 768) {
+             document.getElementById('mobileOverlay').classList.add('hidden');
+             sidebar.classList.remove('translate-x-0');
+             sidebar.classList.add('-translate-x-full');
+        }
+    }
+
+    window.openDeleteModal = function(id, title) {
+        chatToDeleteId = id;
+        document.getElementById('deleteChatTitle').innerText = title;
+        deleteOverlay.classList.remove('hidden');
+    }
+
+    window.closeDeleteModal = function() {
+        deleteOverlay.classList.add('hidden');
+        chatToDeleteId = null;
+    }
+
+    window.confirmDelete = function() {
+        if(chatToDeleteId) {
+            chats = chats.filter(c => c.id !== chatToDeleteId);
+            if(activeChatId === chatToDeleteId) { 
+                activeChatId = null; 
+                if(chats.length > 0) loadChat(chats[0].id);
+                else startNewChat();
+            }
+            saveChats(user.email);
+            renderChatList();
+            closeDeleteModal();
+        }
+    }
+    
+    window.clearAllChats = function() {
+        if(confirm("Clear all chat history?")) {
+            chats = [];
+            activeChatId = null;
+            db.put('chats', user.email, []);
+            renderChatList();
+            startNewChat();
+            closeSettings();
+        }
+    }
+    
+    window.deleteAccount = function() {
+        if(confirm("Delete your account? All data will be lost.")) {
+            db.put('chats', user.email, []);
+            db.put('library', user.email, []);
+            localStorage.removeItem('user');
+            window.location.reload();
+        }
+    }
+
+    window.handleAuth = function() {
+        const name = document.getElementById("authName").value;
+        const email = document.getElementById("authEmail").value;
+        if(name && email) {
+            user = { name, email };
+            localStorage.setItem("user", JSON.stringify(user));
+            document.getElementById("authOverlay").classList.add("hidden");
+            init();
+        }
+    }
+
+    window.handleLogout = function() {
+        localStorage.removeItem('user');
+        window.location.reload();
+    }
+    
+    window.closeAuth = function() {
+        if(user) document.getElementById("authOverlay").classList.add("hidden");
+    }
+
+    window.autoResize = function(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+        toggleSendBtn();
+    }
+
+    function toggleSendBtn() {
+        sendBtn.disabled = !userInput.value.trim() && !pendingImage;
+        if(sendBtn.disabled) {
+            sendBtn.classList.add('opacity-50');
+            sendBtn.classList.remove('bg-white', 'text-black');
+            sendBtn.classList.add('bg-transparent', 'text-gray-400');
+        } else {
+            sendBtn.classList.remove('opacity-50');
+            sendBtn.classList.remove('bg-transparent', 'text-gray-400');
+            sendBtn.classList.add('bg-white', 'text-black');
+        }
+    }
+
+    window.handleEnter = function(e) {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    window.prefill = function(text) { userInput.value = text; autoResize(userInput); sendMessage(); }
+    
+    window.toggleThinkingMode = function() { thinkingMode = !thinkingMode; updateModeBadges(); if(inputMenu) inputMenu.classList.add('hidden'); }
+    window.toggleWebMode = function() { webMode = !webMode; updateModeBadges(); if(inputMenu) inputMenu.classList.add('hidden'); }
+    
+    function updateModeBadges() {
+        if(thinkingMode || webMode) activeModesContainer.classList.remove('hidden');
+        else activeModesContainer.classList.add('hidden');
+        if(thinkingMode) thinkingBadge.classList.remove('hidden'); else thinkingBadge.classList.add('hidden');
+        if(webMode) webBadge.classList.remove('hidden'); else webBadge.classList.add('hidden');
+    }
+
+    window.toggleInputMenu = function() { inputMenu.classList.toggle('hidden'); }
+    
+    window.selectInputOption = function(option) {
+        inputMenu.classList.add('hidden');
+        if(option === 'upload') document.getElementById('fileInput').click();
+        if(option === 'camera') document.getElementById('cameraInput').click();
+        if(option === 'reasoning') toggleThinkingMode();
+        if(option === 'web') toggleWebMode();
+    }
+
+    window.handleFileSelect = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                pendingImage = e.target.result;
+                previewImg.src = pendingImage;
+                imagePreview.classList.remove("hidden");
+                toggleSendBtn();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    window.clearImage = function() {
+        pendingImage = null;
+        imagePreview.classList.add("hidden");
+        document.getElementById('fileInput').value = "";
+        document.getElementById('cameraInput').value = "";
+        toggleSendBtn();
+    }
+
+    window.toggleDesktopSidebar = function() {
+        sidebarExpanded.classList.toggle('visible-content');
+        sidebarExpanded.classList.toggle('hidden-content');
+        sidebarCollapsed.classList.toggle('hidden-content');
+        sidebarCollapsed.classList.toggle('visible-content');
+        if(sidebarExpanded.classList.contains('hidden-content')) {
+            sidebar.classList.remove('w-[260px]');
+            sidebar.classList.add('w-[60px]');
+            desktopSidebarToggle.classList.remove('opacity-0', 'pointer-events-none');
+        } else {
+            sidebar.classList.remove('w-[60px]');
+            sidebar.classList.add('w-[260px]');
+            desktopSidebarToggle.classList.add('opacity-0', 'pointer-events-none');
+        }
+    }
+
+    window.toggleMobileSidebar = function() {
+        const overlay = document.getElementById('mobileOverlay');
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+            overlay.classList.add('hidden');
+        }
+    }
+    
+    window.toggleModelSelector = function() {
+        const dropdown = document.getElementById('modelDropdown');
+        const btn = document.getElementById('modelSelectorBtn');
+        if(dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            dropdown.style.opacity = '0';
+            dropdown.style.transform = 'translate(-50%, -10px)';
+            setTimeout(() => {
+                dropdown.style.opacity = '1';
+                dropdown.style.transform = 'translate(-50%, 0)';
+            }, 10);
+            
+            const closeHandler = (e) => {
+                if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeHandler), 0);
+        } else {
+            dropdown.classList.add('hidden');
+        }
+    }
+    
+    window.openLibrary = function() {
+        document.getElementById('messagesList').classList.add('hidden');
+        welcomeScreen.classList.add('hidden');
+        libraryContainer.classList.remove('hidden');
+        if(library.length === 0) libraryLoading.innerHTML = '<p class="text-gray-400">No images yet. Ask ChatOPT to create one!</p>';
+        else {
+            libraryLoading.classList.add('hidden');
+            libraryGrid.classList.remove('hidden');
+            libraryGrid.innerHTML = '';
+            library.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "relative group rounded-xl overflow-hidden aspect-square border border-white/10";
+                const img = document.createElement('img');
+                img.src = item.src;
+                img.className = "w-full h-full object-cover transition-transform duration-500 group-hover:scale-110";
+                const overlay = document.createElement('div');
+                overlay.className = "absolute inset-0 lib-overlay opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3";
+                overlay.innerHTML = `<p class="text-white text-xs line-clamp-2 font-medium mb-2">${item.prompt}</p><a href="${item.src}" download="chatopt-image.png" class="bg-white text-black text-xs font-bold py-1.5 px-3 rounded-lg text-center hover:bg-gray-200 transition-colors">Download</a>`;
+                card.appendChild(img);
+                card.appendChild(overlay);
+                libraryGrid.appendChild(card);
+            });
+        }
+         if(window.innerWidth < 768) {
+             document.getElementById('mobileOverlay').classList.add('hidden');
+             sidebar.classList.remove('translate-x-0');
+             sidebar.classList.add('-translate-x-full');
+        }
+    }
+
+    window.openSearch = function() {
+        searchOverlay.classList.remove('hidden');
+        searchOverlay.classList.remove('opacity-0');
+        searchInput.focus();
+    }
+
+    window.closeSearch = function() {
+        searchOverlay.classList.add('hidden');
+        searchOverlay.classList.add('opacity-0');
+    }
+    
+    function handleSearchInput(query) {
+        if(searchTimeout) clearTimeout(searchTimeout);
+        if(!query) {
+            searchResults.innerHTML = '<div class="flex flex-col items-center justify-center py-10 text-gray-400"><p class="text-sm">Type to search your chat history</p></div>';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            const results = [];
+            const q = query.toLowerCase();
+            chats.forEach(chat => {
+                if(chat.title.toLowerCase().includes(q) || chat.messages.some(m => m.content.toLowerCase().includes(q))) results.push(chat);
+            });
+            if(results.length === 0) searchResults.innerHTML = '<div class="flex flex-col items-center justify-center py-10 text-gray-400"><p class="text-sm">No results found.</p></div>';
+            else {
+                 searchResults.innerHTML = '';
+                 results.forEach(chat => {
+                     const div = document.createElement('div');
+                     div.className = "p-3 hover:bg-[#3f3f3f] rounded-lg cursor-pointer transition-colors border-b border-white/5 last:border-0";
+                     div.onclick = () => { loadChat(chat.id); closeSearch(); };
+                     div.innerHTML = `<div class="text-white font-medium text-sm mb-1">${chat.title}</div><div class="text-gray-400 text-xs truncate">${new Date(chat.timestamp).toLocaleDateString()}</div>`;
+                     searchResults.appendChild(div);
+                 });
+            }
+        }, 300);
+    }
+    
+    window.openUpgradeModal = function() {
+        upgradeOverlay.classList.remove('hidden');
+        setTimeout(() => upgradeOverlay.classList.remove('opacity-0'), 10);
+    }
+    
+    window.closeUpgradeModal = function() {
+        upgradeOverlay.classList.add('opacity-0');
+        setTimeout(() => upgradeOverlay.classList.add('hidden'), 200);
+    }
+    
+    window.handleUpgradeAction = function() {
+        closeUpgradeModal();
+        billingOverlay.classList.remove('hidden');
+        setTimeout(() => billingOverlay.classList.remove('opacity-0'), 10);
+        setTimeout(() => { billingLoading.classList.add('hidden'); billingForm.classList.remove('hidden'); }, 1500);
+    }
+    
+    window.closeBilling = function() {
+        billingOverlay.classList.add('opacity-0');
+        setTimeout(() => {
+            billingOverlay.classList.add('hidden');
+            billingForm.classList.add('hidden');
+            billingError.classList.add('hidden');
+            billingLoading.classList.remove('hidden');
+        }, 300);
+    }
+
+    function initBillingValidation() {
+        const form = document.getElementById('paymentForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            let isValid = true;
+            const email = document.getElementById('billingEmail');
+            const errEmail = document.getElementById('errorEmail');
+            if(!/^\S+@\S+\.\S+$/.test(email.value)) { showError(email, errEmail, "Invalid email address"); isValid = false; } else clearError(email, errEmail);
+            const card = document.getElementById('billingCard');
+            const errCard = document.getElementById('errorCard');
+            if(card.value.replace(/\s/g, '').length < 16) { showError(card, errCard, "Invalid card number"); isValid = false; } else clearError(card, errCard);
+
+            if(!isValid) return;
+
+            payButton.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> Processing...';
+            setTimeout(() => {
+                 billingForm.classList.add('hidden');
+                 billingError.classList.remove('hidden');
+                 payButton.innerHTML = 'Subscribe';
+            }, 2000);
+        });
+
+        document.getElementById('billingCard').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let matches = v.match(/\d{4,16}/g);
+            let match = matches && matches[0] || '';
+            let parts = [];
+            for (let i = 0, len = match.length; i < len; i += 4) parts.push(match.substring(i, i + 4));
+            if (parts.length) e.target.value = parts.join(' '); else e.target.value = v;
+        });
+        
+        document.getElementById('billingExpiry').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g,'');
+            if (v.length >= 2) e.target.value = v.slice(0,2) + ' / ' + v.slice(2,4); else e.target.value = v;
+        });
+    }
+
+    function showError(input, msgEl, msg) { input.classList.add('input-error'); msgEl.innerText = msg; msgEl.classList.add('visible'); }
+    function clearError(input, msgEl) { input.classList.remove('input-error'); msgEl.classList.remove('visible'); }
+
+    window.openSettings = function() {
+        settingsOverlay.classList.remove('hidden');
+        setTimeout(() => settingsOverlay.classList.remove('opacity-0'), 10);
+    }
+
+    window.closeSettings = function() {
+        settingsOverlay.classList.add('opacity-0');
+        setTimeout(() => settingsOverlay.classList.add('hidden'), 200);
+    }
+
+    window.switchSettingsTab = function(tabName) {
+        document.querySelectorAll('.settings-tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        document.getElementById('content-general').classList.add('hidden');
+        document.getElementById('content-data').classList.add('hidden');
+        document.getElementById('content-' + tabName).classList.remove('hidden');
+    }
+
+    init();
+</script>
+</body>
+</html>
